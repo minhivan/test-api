@@ -2,6 +2,11 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const exjwt = require('express-jwt');
+const {getPosts, getPostsByUser, getSinglePosts} = require('./controllers/post.controller')
+const {getSingleUser, getUser} = require('./controllers/user.controller')
+
+
+
 
 // Instantiating the express app
 const app = express();
@@ -47,15 +52,14 @@ app.post('/login', (req, res) => {
             //If all credentials are correct do this
             let token = jwt.sign({ id: user.id, username: user.username }, TOKEN, { expiresIn: 129600 }); // Sigining the token
             res.json({
-                sucess: true,
-                err: null,
+                success: true,
                 token
             });
             break;
         }
         else {
             res.status(401).json({
-                sucess: false,
+                success: false,
                 token: null,
                 err: 'Username or password is incorrect'
             });
@@ -65,10 +69,88 @@ app.post('/login', (req, res) => {
 
 app.get('/', jwtMW /* Using the express jwt MW here */, (req, res) => {
     res.json({
-        sucess: true,
-        err: null,
+        success: true,
         message: "You are authenticated"
     }); //Sending some response when authenticated
+});
+
+
+// USER ENDPOINTS
+app.get('/users', jwtMW /* Using the express jwt MW here */, async (req, res) => {
+    try {
+        let users = await getUser()
+        res.json({
+            success: true,
+            data: users
+        }); //Sending some response when authenticated
+    } catch (e) {
+        res.status(404).json({
+            success: false,
+
+            message: e.message
+        });
+    }
+
+});
+
+app.get('/users/:id', jwtMW /* Using the express jwt MW here */, async (req, res) => {
+    try {
+        const user_id = req.params.id;
+        let data = await getSingleUser(user_id)
+        res.json({
+            success: true,
+            data
+        }); //Sending some response when authenticated
+    } catch (e) {
+        res.status(404).json({
+            success: false,
+            message: e.message
+        });
+    }
+});
+
+
+// POST ENDPOINTS
+app.get('/posts', jwtMW /* Using the express jwt MW here */, async (req, res) => {
+    try {
+        let data = await getPosts()
+        res.json({
+            success: true,
+            data
+        }); //Sending some response when authenticated
+    } catch (e) {
+        res.status(404).json({
+            success: false,
+            err: e.message,
+            message: "Not Found"
+        });
+    }
+
+});
+
+app.get('/posts/:id', jwtMW /* Using the express jwt MW here */, async (req, res) => {
+    try {
+        const post_id = req.params.id;
+        let data = await getSinglePosts(post_id)
+        res.json({
+            success: true,
+            data
+        });
+    } catch (e) {
+        res.status(404).json({
+            success: false,
+            message: e.message
+        });
+    }
+});
+
+
+app.use(function (req, res, next) {
+    // Invalid request
+    res.status(404).json({
+        success: false,
+        message: "Route not found"
+    });
 });
 
 // Error handling 
@@ -80,6 +162,9 @@ app.use(function (err, req, res, next) {
         next(err);
     }
 });
+
+
+
 
 // Starting the app on PORT 3000
 const PORT = 3000;
