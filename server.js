@@ -45,7 +45,7 @@ app.post('/login', (req, res) => {
     for (let user of users) { // I am using a simple array users which i made above
         if (username == user.username && password == user.password /* Use your password hash checking logic here !*/) {
             //If all credentials are correct do this
-            let token = jwt.sign({ id: user.id, username: user.username }, '', { expiresIn: 129600 }); // Sigining the token
+            let token = jwt.sign({ id: user.id, username: user.username }, TOKEN, { expiresIn: 129600 }); // Sigining the token
             res.json({
                 sucess: true,
                 err: null,
@@ -82,7 +82,7 @@ app.use(function (err, req, res, next) {
 });
 
 // Starting the app on PORT 3000
-const PORT = 8080;
+const PORT = 3000;
 app.listen(PORT, () => {
     // eslint-disable-next-line
     console.log(`Magic happens on port ${PORT}`);
